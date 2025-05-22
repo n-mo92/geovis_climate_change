@@ -183,7 +183,7 @@ all_data_sf[numeric_cols] <- lapply(all_data_sf[numeric_cols],
 # Remove the Solomon Islands (their GHG emissions data is really erratic/unreliable)
 all_data_sf_clean <- all_data_sf[all_data_sf$ISO3 != "SLB", ]
 
-## EXTRA: ADD CONTINENTS ##
+## EXTRA: ADD CONTINENTS & AVERAGES ##
 #all_data_sf_clean <- read_sf("ndgain_ghg_4326.shp")
 
 # Get countries data with continent info
@@ -211,10 +211,21 @@ all_data_sf_joined %>%
 all_data_sf_joined$name_long <- NULL
 
 
+# Calculate averages for nd, gt and gpc for all years
+all_data_nogeom <- st_drop_geometry(all_data_sf_joined)
+
+nd_cols <- all_data_nogeom[, 3:30] 
+gt_cols <- all_data_nogeom[, 31:58]
+gpc_cols <- all_data_nogeom[, 59:86]
+
+all_data_sf_joined <- all_data_sf_joined %>% 
+  mutate(nd_avg = rowMeans(nd_cols, na.rm=TRUE)) %>%
+  mutate(gt_avg = rowMeans(gt_cols, na.rm=TRUE)) %>%
+  mutate(gpc_avg = rowMeans(gpc_cols, na.rm=TRUE))
+
+
 ## SAVE OUTPUTS ##
 
 # Write final version
 st_write(all_data_sf_joined, "all_data_sf_joined.gpkg", append = F)
-
-
-
+                                    
